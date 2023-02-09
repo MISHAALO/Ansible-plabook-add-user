@@ -1,0 +1,28 @@
+---
+- debug:
+    var: users
+
+- name: "Add users"
+  user:
+    name: "{{ item }}"
+    groups: 
+    - 'tomcat'
+    - 'docker'
+    - 'jenkins'
+  with_items:
+  - "{{ users }}"
+  ignore_errors: true
+
+- name: Setup authorized keys
+  authorized_key:
+    user: "{{ item }}"
+    key: "{{ lookup('file', item + '.pub') }}"
+    state: present
+  with_items:
+  - "{{ users }}"
+
+- name: users sudo files.
+  shell: echo "{{ item }} ALL=(ALL) NOPASSWD:ALL" >>  /etc/sudoers
+  with_items:
+  - "{{ users }}"
+
